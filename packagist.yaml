@@ -1,0 +1,61 @@
+services:
+  repman-nginx:
+    image: nginx:alpine
+    container_name: repman-nginx
+    restart: always
+    networks:
+      - gitea
+    depends_on:
+      - repman
+    volumes:
+      - ./config/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - repman-app:/app:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.repman.rule=Host(`repman.${DOMAIN}`)"
+      - "traefik.http.routers.repman.entrypoints=${ENTRYPOINT}"
+      - "traefik.http.routers.repman.tls=${ENABLE_HTTPS}"
+      - "traefik.http.routers.repman-repo.rule=Host(`repo.repman.${DOMAIN}`)"
+      - "traefik.http.routers.repman-repo.entrypoints=${ENTRYPOINT}"
+      - "traefik.http.routers.repman-repo.tls=${ENABLE_HTTPS}"
+      - "traefik.http.services.repman.loadbalancer.server.port=80"
+
+  repman:
+    image: buddy/repman:latest
+    container_name: repman
+    restart: always
+    networks:
+      - gitea
+    environment:
+      - APP_ENV=prod
+      - APP_SECRET=change-me-in-production
+      - DATABASE_URL=postgresql://repman:repman@repman-postgres:5432/repman
+      - MAILER_DSN=null://null
+      - MAILER_SENDER=noreply@${DOMAIN}
+      - APP_HOST=repman.${DOMAIN}
+      - APP_SCHEME=https
+    depends_on:
+      - repman-postgres
+    volumes:
+      - ./data/repman:/app/var
+      - repman-app:/app
+
+  repman-postgres:
+    image: postgres:13
+    container_name: repman-postgres
+    restart: always
+    networks:
+      - gitea
+    environment:
+      - POSTGRES_DB=repman
+      - POSTGRES_USER=repman
+      - POSTGRES_PASSWORD=repman
+    volumes:
+      - ./data/repman-postgres:/var/lib/postgresql/data
+
+networks:
+  gitea:
+    external: true
+
+volumes:
+  repman-app: 

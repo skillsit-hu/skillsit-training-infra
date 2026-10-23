@@ -1,0 +1,20 @@
+services:
+  sablier:
+    image: sablierapp/sablier:1.10.1
+    container_name: sablier
+    restart: unless-stopped
+    networks:
+      - gitea
+      - default
+    command:
+      - start
+      - '--provider.name=docker'
+      - '--sessions.default-duration=60m'
+      - '--sessions.expiration-interval=5m'
+      - '--strategy.dynamic.default-theme=ghost'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+
+networks:
+  gitea:
+    external: true

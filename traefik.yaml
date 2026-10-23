@@ -1,0 +1,47 @@
+services:
+  traefik:
+    image: traefik:v3.7.13
+    container_name: traefik
+    restart: unless-stopped
+    networks:
+      - gitea
+      - default
+    command:
+      - '--log.level=DEBUG'
+      - '--api.insecure=true'
+      - '--providers.file.directory=/etc/traefik/dynamic'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--entrypoints.web.address=:80'
+      # - '--entrypoints.websecure.address=:443'
+      - '--entrypoints.websecure.address=:${REGISTRY_PORT}'
+#      - '--providers.docker.defaultRule=HostRegexp(`{_:{{ index .Labels \"com.docker.compose.service\" }}\\..*}`)'
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.forwardedHeaders.trustedIPs=0.0.0.0/0"
+      - "--entrypoints.websecure.proxyProtocol.trustedIPs=0.0.0.0/0"
+      - '--providers.docker.defaultRule=HostRegexp(`.+`)'
+      - '--serversTransport.insecureSkipVerify=true'
+      - '--experimental.plugins.sablier.modulename=github.com/sablierapp/sablier'
+      - '--experimental.plugins.sablier.version=v1.10.1'
+    ports:
+      - '80:80'
+      - '443:443'
+      - '5000:5000'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+      - './letsencrypt:/letsencrypt'
+      - './config/traefik:/etc/traefik/dynamic'
+      - './config/traefik/certs:/etc/certs/'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`${GITEA_HOSTNAME}`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+
+networks:
+  gitea:
+    name: gitea
+    driver: bridge

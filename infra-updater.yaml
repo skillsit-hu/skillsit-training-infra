@@ -1,0 +1,31 @@
+services:
+  infra-updater:
+    image: ghcr.io/skillsit-hu/infra-updater-json:latest
+    container_name: infra-updater
+    restart: always
+    networks:
+      - gitea
+    environment:
+      - CONFIG_PATH=/config/main-config.json
+      - COMPETITORS_COMPOSE_PATH=/home/azureuser/infra/competitors.yaml
+      - TRAEFIK_CONFIG_PATH=/traefik.yaml
+      - WEBHOOK_SECRET=GFW8Mq5ANOsK
+      - DOCKER_PROJECT_NAME=infra
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Whole dir, as create_user.sh replaces main-config.json via mv
+      - ./config:/config:ro
+      # Same path as on the host so the containers' compose dir matches what pulldeck uses
+      - ./competitors.yaml:/home/azureuser/infra/competitors.yaml
+      - ./config/traefik/competitors.yaml:/traefik.yaml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.infra-updater.rule=HostRegexp(`^infra-updater\\..+$`)"
+      - "traefik.http.services.infra-updater.loadbalancer.server.port=80"
+      - "traefik.http.routers.infra-updater.entrypoints=websecure"
+      - "traefik.http.routers.infra-updater.tls=true"
+
+
+networks:
+  gitea:
+    external: true

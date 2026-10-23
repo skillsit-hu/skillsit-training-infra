@@ -1,0 +1,137 @@
+{
+  "domain": "digitalent.skillsit.hu",
+  "enableHttps": true,
+  "username": "root",
+  "password": "rR9DxT6RDIeU",
+  "modules": [
+    "test"
+  ],
+  "competitors": [
+    {
+      "name": "Bodor István",
+      "username": "bis",
+      "password": "1g0J7k2j6r5X8y9g5k7",
+      "subdomain": "bis"
+    },
+    {
+      "name": "Sisák Zoltán",
+      "username": "szo",
+      "password": "5g7k8y9g5k7J2j6r5X8y",
+      "subdomain": "szo"
+    },
+    {
+      "name": "Hrustinszki Ádám",
+      "username": "had",
+      "password": "5X8y9g5k7J2j6r1g0J7k2",
+      "subdomain": "had"
+    },
+    {
+      "name": "Apró Bence",
+      "username": "abe",
+      "password": "HR5lZ4ymGPz8BtDzu2Us",
+      "subdomain": "abe"
+    },
+    {
+      "name": "Papp-Hegyi Ákos",
+      "username": "pha",
+      "password": "XsMbYCQeRIycAMQ46blN",
+      "subdomain": "pha"
+    },
+    {
+      "name": "Zsigmond Dorián Bendegúz",
+      "username": "zdb",
+      "password": "JRUCzceu_Er0vf9U63qp",
+      "subdomain": "zdb"
+    },
+    {
+      "name": "Szakács Vendel",
+      "username": "sve",
+      "password": "YOw1SlB-vGV5kEBEGoAM",
+      "subdomain": "sve"
+    },
+    {
+      "name": "Vincze Dominik",
+      "username": "vdo",
+      "password": "v4YfkKmJA8ZIK-cbUOW6",
+      "subdomain": "vdo"
+    },
+    {
+      "name": "Bóta Milán",
+      "username": "bmi",
+      "password": "Vm6BAHhS43jBSUfjd6Vn",
+      "subdomain": "bmi"
+    },
+    {
+      "name": "Berki Bálint",
+      "username": "bba",
+      "password": "HfFjHPGuzCO0dqOYFcFj",
+      "subdomain": "bba"
+    },
+    {
+      "name": "Kramer Bálint",
+      "username": "kba",
+      "password": "Nk9cBdgBgksOAEWQrxKH",
+      "subdomain": "kba"
+    },
+    {
+      "name": "Susa Milán Mihály",
+      "username": "smm",
+      "password": "jFb7h-rT1FvjJhtrdWhr",
+      "subdomain": "smm"
+    },
+    {
+      "name": "Kovács Zsombor",
+      "username": "kzs",
+      "password": "oEuKMh223eHptdvEM8KD",
+      "subdomain": "kzs"
+    },
+    {
+      "name": "Ngo Nguyen Thao",
+      "username": "nnt",
+      "password": "8Utp2nrpzmqxsqhXZKKf",
+      "subdomain": "nnt"
+    },
+    {
+      "name": "Berényi Bence",
+      "username": "bbe",
+      "password": "1GpcYy-Ye3RM2z2Fkkvp",
+      "subdomain": "bbe"
+    },
+    {
+      "name": "Fülöp Máté",
+      "username": "fma",
+      "password": "zfJVbyIWjoDTmeehfibl",
+      "subdomain": "fma"
+    },
+    {
+      "name": "Németh Ádám Norbert",
+      "username": "nan",
+      "password": "eXq1SXdpjqxLOCBJamVS",
+      "subdomain": "nan"
+    },
+    {
+      "name": "Schmidt Zalán",
+      "username": "sza",
+      "password": "scwohc9Ml94rWQZaKbB1",
+      "subdomain": "sza"
+    },
+    {
+      "name": "Garay Ágoston",
+      "username": "gag",
+      "password": "ODYm5LuIH7Nb4c5fRZ3u",
+      "subdomain": "gag"
+    },
+    {
+      "name": "Farkas Róbert",
+      "username": "fro",
+      "password": "7oaWjaTkRPAnEJoFwobN",
+      "subdomain": "fro"
+    },
+    {
+      "name": "Tóth Kristóf Antal",
+      "username": "tka",
+      "password": "OKhL7I_Px2galGPMcnsJ",
+      "subdomain": "tka"
+    }
+  ]
+}

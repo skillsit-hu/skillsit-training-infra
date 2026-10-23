@@ -1,0 +1,19 @@
+data
+.DS_Store
+.idea
+.env
+
+# framework clones created by import_framework.sh
+laravel/
+vanilla/
+nuxtjs/
+nextjs/
+nextjs-prisma/
+expressjs/
+prisma/
+zurb-foundation/
+vuejs/
+reactjs/
+bootstrap/
+angular/
+tailwindcss/

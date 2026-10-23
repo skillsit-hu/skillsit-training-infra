@@ -1,0 +1,69 @@
+services:
+  runner1: &runner
+    image: gitea/act_runner:latest
+    networks:
+      - gitea
+    environment: &runner_env
+      CONFIG_FILE: /config.yaml
+      GITEA_INSTANCE_URL: "http://gitea:3000"
+      GITEA_RUNNER_REGISTRATION_TOKEN: "${REGISTRATION_TOKEN}"
+      GITEA_RUNNER_NAME: "Runner 1"
+    restart: always
+    volumes:
+      - ./config/gitea-runner/config.yaml:/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/runner1:/data
+  runner2:
+    <<: *runner
+    environment:
+      <<: *runner_env
+      GITEA_RUNNER_NAME: "Runner 2"
+    restart: always
+    volumes:
+      - ./config/gitea-runner/config.yaml:/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/runner2:/data
+  runner3:
+    <<: *runner
+    environment:
+      <<: *runner_env
+      GITEA_RUNNER_NAME: "Runner 3"
+    restart: always
+    volumes:
+      - ./config/gitea-runner/config.yaml:/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/runner3:/data
+  runner4:
+    <<: *runner 
+    environment:
+      <<: *runner_env
+      GITEA_RUNNER_NAME: "Runner 4"
+    restart: always
+    volumes:
+      - ./config/gitea-runner/config.yaml:/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/runner4:/data
+  runner5:
+    <<: *runner
+    environment:
+      <<: *runner_env
+      GITEA_RUNNER_NAME: "Runner 5"
+    restart: always
+    volumes:
+      - ./config/gitea-runner/config.yaml:/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/runner5:/data
+  runner6:
+    <<: *runner
+    environment:
+      <<: *runner_env
+      GITEA_RUNNER_NAME: "Runner 6"
+    restart: always
+    volumes:
+      - ./config/gitea-runner/config.yaml:/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/runner6:/data
+
+networks:
+  gitea:
+    external: true
