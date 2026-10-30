@@ -23,3 +23,10 @@ node_modules/
 app/packages/*/dist/
 # job logs written by the admin server
 data-admin/
+
+# secrets written by install.sh / init (see config/main-config.example.json)
+config/main-config.json
+pulldeck.env
+# legacy name of pulldeck.env
+.env.clara
+.admin.env

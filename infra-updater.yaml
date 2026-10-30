@@ -7,7 +7,7 @@ services:
       - gitea
     environment:
       - CONFIG_PATH=/config/main-config.json
-      - COMPETITORS_COMPOSE_PATH=/home/azureuser/infra/competitors.yaml
+      - COMPETITORS_COMPOSE_PATH=${INFRA_DIR:?INFRA_DIR is not set}/competitors.yaml
       - TRAEFIK_CONFIG_PATH=/traefik.yaml
       - WEBHOOK_SECRET=GFW8Mq5ANOsK
       - DOCKER_PROJECT_NAME=infra
@@ -16,7 +16,7 @@ services:
       # Whole dir, so a replaced main-config.json (new inode) is still picked up
       - ./config:/config:ro
       # Same path as on the host so the containers' compose dir matches what pulldeck uses
-      - ./competitors.yaml:/home/azureuser/infra/competitors.yaml
+      - ./competitors.yaml:${INFRA_DIR:?INFRA_DIR is not set}/competitors.yaml
       - ./config/traefik/competitors.yaml:/traefik.yaml
     labels:
       - "traefik.enable=true"

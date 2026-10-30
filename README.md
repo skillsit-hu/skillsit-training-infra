@@ -12,27 +12,37 @@ The environment includes:
 
 ## Setting up the Environment
 
-### Prerequisites
-Ensure [Node.js](https://nodejs.org/) 20 or newer is installed. On a fresh Debian host, `node setup.mjs` installs Docker (it has no dependencies).
+### Quick start
+On a fresh Debian or Ubuntu server you only need git:
 
-The other scripts are thin wrappers around the shared code in `app/`, which has to be built once (and after every update):
+```bash
+git clone <this repository> infra && cd infra
+sudo sh install.sh
+```
+
+`install.sh` does the following:
+1. Installs Docker if it is missing.
+2. Asks for the competition domain and the root password, and writes `config/main-config.json`.
+3. Starts the base layer: Traefik and the admin UI.
+4. Prints the admin address.
+
+Create a wildcard DNS record (`*.<domain>` pointing to the server) beforehand. Everything else is done in the browser:
+
+- **Admin UI:** `https://admin.<domain>`. Log in with the root user.
+- **Fallback when Traefik is down:** `ssh -L 8090:127.0.0.1:8090 <server>`, then open `http://localhost:8090`.
+
+In the UI you add the modules and competitors, then run **Inicializálás** (init). You can follow every operation's log live; logs are also kept in `data-admin/jobs/`.
+
+Re-running `install.sh` keeps the existing configuration and only restarts the base layer. Traefik and the admin UI are not touched by stop and clean.
+
+The built-in TLS certificate in `config/traefik/certs` is used for every host, so browsers warn on other domains. Proper certificates are a to-do.
+
+### Command line (optional)
+The operations can also be run from the shell. This needs Node.js 20+ and a one-time build of `app/`:
 
 ```bash
 cd app && npm ci && npm run build
 ```
-
-### Admin UI
-The same operations are available from a web UI (`app/`: Express API + React). Start it as a container next to the environment:
-
-```bash
-docker compose -f admin.yaml up -d --build
-```
-
-If the repository is not at `/home/azureuser/infra`, pass its absolute path: `INFRA_DIR=$PWD docker compose -f admin.yaml up -d --build`.
-
-It listens on `http://<host>:8090` (set `ADMIN_PORT` to change it) and logs in with the root `username` / `password` from `config/main-config.json`. From the UI you can edit the configuration (domain, HTTPS, modules, competitors), run the operations below, and follow their logs live. Set `ADMIN_SESSION_SECRET` so logins survive container restarts. The admin container is not part of start/stop/clean, so it keeps running after `clean`. Job logs are kept in `data-admin/jobs/`.
-
-The UI is served over plain HTTP; reach it through an SSH tunnel or a firewall-restricted port.
 
 ### Commands
 - **Initialize the environment:**  
@@ -56,7 +66,7 @@ The UI is served over plain HTTP; reach it through an SSH tunnel or a firewall-r
   `node disable_competitors_gitlogin.mjs`
 
 ### Configuration
-The environment is configured in `config/main-config.json`:
+The environment is configured in `config/main-config.json`. `install.sh` creates it, the admin UI edits it, and it is not committed (see `config/main-config.example.json`):
 
 ```json
 {

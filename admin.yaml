@@ -1,28 +1,46 @@
-# Infra admin UI (app/). Not part of the start/stop/clean stacks, so it keeps running when the environment is torn down.
+# Infra admin UI (app/). Started by install.sh together with traefik.yaml; stop/clean leave both running.
 #
-#   docker compose -f admin.yaml up -d --build
+#   docker compose --env-file .admin.env -f admin.yaml up -d --build
 #
-# Settings (shell environment or a .env file next to this one):
-#   INFRA_DIR             absolute host path of this repository (default: /home/azureuser/infra)
-#   ADMIN_PORT            port of the UI (default: 8090)
+# .admin.env (written by install.sh):
+#   INFRA_DIR             absolute host path of this repository
 #   ADMIN_SESSION_SECRET  keeps logins valid across container restarts
+#   ADMIN_PORT            local fallback port, bound to 127.0.0.1 (default: 8090)
 #   DRY_RUN=1             log the commands instead of running them
+
+# Own compose project: `up --remove-orphans` on the infra stacks would otherwise remove this container.
+name: infra-admin
+
 services:
   infra-admin:
     build: ./app
     image: infra-admin:latest
     container_name: infra-admin
     restart: unless-stopped
-    # Host network: Gitea's API is reached on 127.0.0.1:3000 like the scripts do, and the UI works
-    # before traefik.yaml has created the gitea network.
-    network_mode: host
+    networks:
+      - gitea
+    ports:
+      # Fallback when Traefik is down: ssh -L 8090:127.0.0.1:8090 <server>
+      - "127.0.0.1:${ADMIN_PORT:-8090}:8090"
     environment:
-      - REPO_DIR=${INFRA_DIR:-/home/azureuser/infra}
-      - ADMIN_PORT=${ADMIN_PORT:-8090}
+      - REPO_DIR=${INFRA_DIR:?INFRA_DIR is not set}
+      - ADMIN_PORT=8090
+      # Straight to the Gitea container; the public hostname goes through Traefik, which can hang once the runners start.
+      - GITEA_API_URL=http://gitea:3000
       - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET:-}
       - DRY_RUN=${DRY_RUN:-}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       # Same path as on the host: docker compose resolves the stacks' relative bind mounts (./data, ./config)
       # inside this container, and the host daemon has to find them at the same place.
-      - ${INFRA_DIR:-/home/azureuser/infra}:${INFRA_DIR:-/home/azureuser/infra}
+      - ${INFRA_DIR}:${INFRA_DIR}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.infra-admin.rule=HostRegexp(`^admin\\..+$`)"
+      - "traefik.http.routers.infra-admin.entrypoints=websecure"
+      - "traefik.http.routers.infra-admin.tls=true"
+      - "traefik.http.services.infra-admin.loadbalancer.server.port=8090"
+
+networks:
+  gitea:
+    external: true
