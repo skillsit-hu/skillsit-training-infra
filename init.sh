@@ -1,5 +1,8 @@
 #!/bin/bash
 
+repo_dir=$(cd "$(dirname "$0")" && pwd)
+find "$repo_dir" -type f -name '*.sh' -exec chmod +x {} +
+
 CONFIG_FILE=config/main-config.json
 
 if ! command -v jq >/dev/null 2>&1; then
