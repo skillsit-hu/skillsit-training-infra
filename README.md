@@ -28,6 +28,8 @@ The same operations are available from a web UI (`app/`: Express API + React). S
 docker compose -f admin.yaml up -d --build
 ```
 
+If the repository is not at `/home/azureuser/infra`, pass its absolute path: `INFRA_DIR=$PWD docker compose -f admin.yaml up -d --build`.
+
 It listens on `http://<host>:8090` (set `ADMIN_PORT` to change it) and logs in with the root `username` / `password` from `config/main-config.json`. From the UI you can edit the configuration (domain, HTTPS, modules, competitors), run the operations below, and follow their logs live. Set `ADMIN_SESSION_SECRET` so logins survive container restarts. The admin container is not part of start/stop/clean, so it keeps running after `clean`. Job logs are kept in `data-admin/jobs/`.
 
 The UI is served over plain HTTP; reach it through an SSH tunnel or a firewall-restricted port.
