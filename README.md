@@ -119,7 +119,7 @@ The environment is configured in `config/main-config.json`. `install.sh` creates
    Open your Git server (e.g., `https://git.local.skill17.com`) and log in using your credentials.
 
 2. **Choose a Framework Template:**  
-   Go to `organization -> frameworks` to pick a framework or the vanilla base for your repository. The templates include the necessary Docker and Gitea files with GitHub Actions ready to use. Check the [Frameworks Documentation](./frameworks.md) for details.  
+   Go to `organization -> frameworks` to pick a framework or the vanilla base for your repository. The templates include the necessary Docker and Gitea files with GitHub Actions ready to use.  
    **Tip:** Keep frontend and backend in separate repositories for better organization.
 
 3. **Use the Template:**  

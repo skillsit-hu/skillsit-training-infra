@@ -18,7 +18,6 @@ services:
     volumes:
       # - ./data/gitea:/data/gitea
       - ./config/gitea:/data/gitea/conf
-      # - ./scripts:/scripts
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     environment:

@@ -74,4 +74,3 @@ On the host:
 - The webhook secret is duplicated in `core/src/gitea.ts` (`WEBHOOK_SECRET`) and `infra-updater.yaml`. The compose project name `infra` is duplicated in `exec.ts`, `install.sh` and `infra-updater.yaml` (`DOCKER_PROJECT_NAME`).
 - `competitors.yaml`, `config/mysql/competitors.sql` and `.env` are generated files.
 - `core.autocrlf` is on in the Windows checkout. `*.sh` must stay LF (`.gitattributes`); otherwise `install.sh` fails when run from WSL on the Windows working copy.
-- `solutions.yaml` and `content-services.yaml` are standalone stacks; no operation manages them.
