@@ -1,0 +1,20 @@
+# Infra admin UI (app/). Not part of the start/stop/clean stacks, so it keeps running when the environment is torn down.
+#   docker compose -f admin.yaml up -d --build
+services:
+  infra-admin:
+    build: ./app
+    image: infra-admin:latest
+    container_name: infra-admin
+    restart: unless-stopped
+    # Host network: Gitea's API is reached on 127.0.0.1:3000 like the scripts do, and the UI works
+    # before traefik.yaml has created the gitea network.
+    network_mode: host
+    environment:
+      - REPO_DIR=/home/azureuser/infra
+      - ADMIN_PORT=${ADMIN_PORT:-8090}
+      - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Same path as on the host: docker compose resolves the stacks' relative bind mounts (./data, ./config)
+      # inside this container, and the host daemon has to find them at the same place.
+      - /home/azureuser/infra:/home/azureuser/infra

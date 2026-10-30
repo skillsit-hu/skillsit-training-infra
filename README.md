@@ -13,22 +13,45 @@ The environment includes:
 ## Setting up the Environment
 
 ### Prerequisites
-Ensure Docker and [jq](https://jqlang.github.io/jq/) are installed. `jq` is used to read `config/main-config.json`.
+Ensure [Node.js](https://nodejs.org/) 20 or newer is installed. On a fresh Debian host, `node setup.mjs` installs Docker (it has no dependencies).
+
+The other scripts are thin wrappers around the shared code in `app/`, which has to be built once (and after every update):
+
+```bash
+cd app && npm ci && npm run build
+```
+
+### Admin UI
+The same operations are available from a web UI (`app/`: Express API + React). Start it as a container next to the environment:
+
+```bash
+docker compose -f admin.yaml up -d --build
+```
+
+It listens on `http://<host>:8090` (set `ADMIN_PORT` to change it) and logs in with the root `username` / `password` from `config/main-config.json`. From the UI you can edit the configuration (domain, HTTPS, modules, competitors), run the operations below, and follow their logs live. Set `ADMIN_SESSION_SECRET` so logins survive container restarts. The admin container is not part of start/stop/clean, so it keeps running after `clean`. Job logs are kept in `data-admin/jobs/`.
+
+The UI is served over plain HTTP; reach it through an SSH tunnel or a firewall-restricted port.
 
 ### Commands
 - **Initialize the environment:**  
-  `./init.sh`
+  `node init.mjs`
    
-   **Note:** If you have previously run `./init.sh`, make sure to clean the environment first by running `./clean.sh` before initializing again. This ensures a fresh setup and avoids potential conflicts.
+   **Note:** If you have previously run `node init.mjs`, make sure to clean the environment first by running `node clean.mjs` before initializing again. This ensures a fresh setup and avoids potential conflicts.
+
+- **Add a competitor to a running environment:**  
+  `node create_user.mjs <username> <password>`
 
 - **Stop the environment:**  
-  `./stop.sh`
+  `node stop.mjs`
 
 - **Restart the environment:**  
-  `./start.sh`
+  `node start.mjs`
 
 - **Clean the entire system:**  
-  `./clean.sh`
+  `node clean.mjs`
+
+- **Disable all competitors' Gitea logins:**  
+  `node disable_competitors_gitlogin.mjs`
 
 ### Configuration
 The environment is configured in `config/main-config.json`:
@@ -73,7 +96,7 @@ The environment is configured in `config/main-config.json`:
   **Example:** `https://packagist.local.skill17.com`
 
 ## Updates (Environment Repository)
-   Before making changes to the environment repository, stop all Docker containers: `./stop.sh`
+   Before making changes to the environment repository, stop all Docker containers: `node stop.mjs`
 
 
 ## Competitor Workflow

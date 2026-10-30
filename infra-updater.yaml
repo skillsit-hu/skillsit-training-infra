@@ -13,7 +13,7 @@ services:
       - DOCKER_PROJECT_NAME=infra
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      # Whole dir, as create_user.sh replaces main-config.json via mv
+      # Whole dir, so a replaced main-config.json (new inode) is still picked up
       - ./config:/config:ro
       # Same path as on the host so the containers' compose dir matches what pulldeck uses
       - ./competitors.yaml:/home/azureuser/infra/competitors.yaml
