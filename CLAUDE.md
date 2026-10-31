@@ -76,4 +76,4 @@ On the host:
 - The config schema restricts usernames, modules and subdomains to slug characters, and passwords may not contain `'`, `\` or newlines. These values end up in hostnames, compose YAML and SQL. `install.sh` repeats the same rules.
 - The webhook secret is duplicated in `core/src/gitea.ts` (`WEBHOOK_SECRET`) and `infra-updater.yaml`. The compose project name `infra` is duplicated in `exec.ts`, `install.sh` and `infra-updater.yaml` (`DOCKER_PROJECT_NAME`).
 - `competitors.yaml`, `config/mysql/competitors.sql` and `.env` are generated files.
-- `core.autocrlf` is on in the Windows checkout. `*.sh` must stay LF (`.gitattributes`); otherwise `install.sh` fails when run from WSL on the Windows working copy.
+- `core.autocrlf` is on in the Windows checkout. `*.sh` must stay LF (`.gitattributes`); otherwise `install.sh` fails when run from WSL on the Windows working copy. The Windows checkout also has `core.fileMode=false`, so a `chmod` there is not recorded; set the executable bit with `git update-index --chmod=+x <file>` (`install.sh` is stored as 100755).
