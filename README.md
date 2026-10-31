@@ -52,7 +52,7 @@ Requirements:
 
 Hosts without a certificate yet, and every host when Let's Encrypt is off, get the built-in certificate from `config/traefik/certs`, which browsers warn about. Use this for local or test environments whose domain isn't publicly resolvable.
 
-The admin UI's route is created from the domain by `install.sh`. After changing the domain in the UI, re-run `sudo INFRA_KEEP_CONFIG=1 sh install.sh`.
+The admin UI writes its own route whenever the configuration is saved, so a new domain or Let's Encrypt setting applies to `admin.<domain>` right away. The other services follow at the next Inicializálás.
 
 ### Admin UI
 The admin UI lives in its own repository, [skillsit-training-admin](https://github.com/skillsit-hu/skillsit-training-admin). GitHub Actions publishes it as the `ghcr.io/skillsit-hu/skillsit-training-admin` image, so nothing is built on the server. `install.sh` pulls the latest image.

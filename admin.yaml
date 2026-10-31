@@ -2,9 +2,10 @@
 # Started by install.sh together with traefik.yaml; stop/clean leave both running.
 #
 #   sudo INFRA_KEEP_CONFIG=1 sh install.sh   (pulls the image and recreates the container)
+#   docker compose -p infra-admin --env-file .admin.env -f admin.yaml up -d
 #
-# By hand, GITEA_HOSTNAME (the domain) and CERT_RESOLVER have to be set, as install.sh does:
-#   GITEA_HOSTNAME=<domain> CERT_RESOLVER=letsencrypt docker compose -p infra-admin --env-file .admin.env -f admin.yaml up -d
+# No Traefik labels: the admin writes its own route to config/traefik/admin.yaml from main-config.json (on start
+# and on every config save), so a new domain or Let's Encrypt setting applies without recreating this container.
 #
 # .admin.env (written by install.sh):
 #   INFRA_DIR             absolute host path of this repository
@@ -13,8 +14,6 @@
 #   DRY_RUN=1             log the commands instead of running them
 #   ADMIN_IMAGE           optional, e.g. a pinned tag (...:1.2.0) or a locally built image
 #   ACME_CA_SERVER        optional, e.g. https://acme-staging-v02.api.letsencrypt.org/directory to test Let's Encrypt
-#
-# install.sh also passes GITEA_HOSTNAME and CERT_RESOLVER from config/main-config.json.
 
 # Own compose project: `up --remove-orphans` on the infra stacks would otherwise remove this container.
 name: infra-admin
@@ -43,15 +42,6 @@ services:
       # Same path as on the host: docker compose resolves the stacks' relative bind mounts (./config, ...)
       # inside this container, and the host daemon has to find them at the same place.
       - ${INFRA_DIR}:${INFRA_DIR}
-    labels:
-      - "traefik.enable=true"
-      # Host() instead of HostRegexp: Let's Encrypt needs the exact name. install.sh passes the domain, so re-run it
-      # after changing the domain in the UI.
-      - "traefik.http.routers.infra-admin.rule=Host(`admin.${GITEA_HOSTNAME:?GITEA_HOSTNAME is not set}`)"
-      - "traefik.http.routers.infra-admin.entrypoints=websecure"
-      - "traefik.http.routers.infra-admin.tls=true"
-      - "traefik.http.routers.infra-admin.tls.certresolver=${CERT_RESOLVER:-}"
-      - "traefik.http.services.infra-admin.loadbalancer.server.port=8090"
 
 networks:
   gitea:

@@ -18,6 +18,8 @@ bootstrap/
 angular/
 tailwindcss/
 
+# Traefik route of the admin UI, written by the admin from main-config.json
+config/traefik/admin.yaml
 # job logs written by the admin server
 data-admin/
 

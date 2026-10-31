@@ -33,7 +33,7 @@ On the host:
   - `down` on a compose file without services (e.g. an empty `competitors.yaml`) acts on the whole project, so clean skips such files.
   - `COMPOSE_PROJECT_NAME` beats the top-level `name:`, so never export it around these calls.
 - The `gitea` network is created with `docker network create` (by `install.sh` and by init) and is `external` in every compose file, so no project owns or removes it.
-- The admin container is on the `gitea` network. Traefik routes `HostRegexp(^admin\..+$)` to it.
+- The admin container is on the `gitea` network and has no Traefik labels. It writes its own route to `config/traefik/admin.yaml` (gitignored) from `main-config.json`: when the server starts, on every config save and in init. A changed domain or Let's Encrypt setting therefore applies without recreating the container, which the admin cannot do to itself.
 - It reaches Gitea's API directly at `http://gitea:3000` (`GITEA_API_URL`). The public hostname goes through Traefik, which can hang once the runners start.
 - It mounts this repo at the same absolute path as on the host (`INFRA_DIR`). `docker compose` runs inside the container, but the host daemon resolves the stacks' relative bind mounts, so the paths must match. `pulldeck.yaml` uses `${INFRA_DIR}` for the same reason.
 
@@ -44,7 +44,6 @@ On the host:
 - The variable comes from `install.sh`, or from `routingEnv()` in the admin (init, start). Both derive it the same way, so `up` on Traefik does not recreate it needlessly.
 - The admin's `syncCompetitors` writes it into the competitor routes (`config/traefik/competitors.yaml`).
 - ACME needs exact hostnames, so routers use `Host(\`x.${GITEA_HOSTNAME}\`)`, not `HostRegexp`.
-  - Because of this, the admin route depends on the domain that `install.sh` passes in.
 - Competitor hosts are `<user>-<module>`, lowercase, with `_` replaced by `-`, because Let's Encrypt rejects `_`. This is `competitorHost()` in the admin.
 - Certificates live in the `infra-traefik_letsencrypt` volume, which clean never removes, because of the Let's Encrypt rate limits. Setting `ACME_CA_SERVER` in `.admin.env` switches to the staging CA.
 
