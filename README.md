@@ -94,6 +94,7 @@ The environment is configured in `config/main-config.json`. `install.sh` creates
 3. **username / password:** Root credentials for Gitea and MySQL.
 4. **modules:** Competition task names. A competitor site is published at `<username>-<module>.<domain>`, lowercase, with `_` replaced by `-` (Let's Encrypt rejects `_` in hostnames).
 5. **competitors:** Each entry is a username and a password, with an optional display name.
+6. **frameworks:** The framework templates that init imports into the Gitea `frameworks` organization as template repositories, as `{ "name": "laravel", "url": "https://github.com/…/ws26-laravel.git" }` entries. Without the field the built-in list (the sitc2026-templates repositories) is used. Add or remove templates on the Konfiguráció page; the change applies at the next Inicializálás. A template without `.gitea/workflows/docker-ci.yaml` is imported unchanged.
 
 ## Using the Environment
 

@@ -3,7 +3,7 @@ data
 .idea
 .env
 
-# framework clones created by init
+# framework clones of older versions (init now clones into data-admin/frameworks)
 laravel/
 vanilla/
 nuxtjs/
