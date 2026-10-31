@@ -15,7 +15,8 @@ fi
 
 cd "$(dirname "$0")"
 INFRA_DIR=$(pwd -P)
-REPO_OWNER=$(stat -c '%u:%g' .)
+# uid:gid of the repo directory (ls -n is portable; stat's flags differ between GNU and BSD/macOS)
+REPO_OWNER=$(ls -nd . | awk '{ print $3 ":" $4 }')
 CONFIG=config/main-config.json
 ADMIN_ENV=.admin.env
 # Compose project of the infra stacks; must match COMPOSE_PROJECT in app/packages/core/src/exec.ts.
