@@ -19,9 +19,10 @@ INFRA_DIR=$(pwd -P)
 REPO_OWNER=$(ls -nd . | awk '{ print $3 ":" $4 }')
 CONFIG=config/main-config.json
 ADMIN_ENV=.admin.env
-# Compose project of the infra stacks; must match COMPOSE_PROJECT in app/packages/core/src/exec.ts.
-# Not exported: it would override `name: infra-admin` in admin.yaml.
-INFRA_PROJECT=infra
+# Compose projects of the base layer; must match BASE_PROJECT in app/packages/core/src/compose-files.ts and the
+# `name:` in traefik.yaml / admin.yaml. Passed with -p, never exported (COMPOSE_PROJECT_NAME beats `name:`).
+TRAEFIK_PROJECT=infra-traefik
+ADMIN_PROJECT=infra-admin
 
 say() { printf '%s\n' "$*"; }
 die() { printf 'Error: %s\n' "$*" >&2; exit 1; }
@@ -188,11 +189,21 @@ fi
 
 # --- Base layer -------------------------------------------------------------------------------------------
 
+# The shared network belongs to no compose project, so no `down` can remove it.
+docker network inspect gitea >/dev/null 2>&1 || docker network create gitea >/dev/null
+
+# Earlier versions ran Traefik in the `infra` project; its container name would clash with the new project.
+old_project=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' traefik 2>/dev/null || true)
+if [ -n "$old_project" ] && [ "$old_project" != "$TRAEFIK_PROJECT" ]; then
+  say "Moving Traefik from compose project '$old_project' to '$TRAEFIK_PROJECT'..."
+  docker rm -f traefik >/dev/null
+fi
+
 say "Starting Traefik..."
-GITEA_HOSTNAME=$DOMAIN REGISTRY_PORT=$REGISTRY_PORT INFRA_DIR=$INFRA_DIR docker compose -p "$INFRA_PROJECT" -f traefik.yaml up -d
+GITEA_HOSTNAME=$DOMAIN REGISTRY_PORT=$REGISTRY_PORT docker compose -p "$TRAEFIK_PROJECT" -f traefik.yaml up -d
 
 say "Building and starting the admin UI (the first build takes a few minutes)..."
-docker compose -p infra-admin --env-file "$ADMIN_ENV" -f admin.yaml up -d --build
+docker compose -p "$ADMIN_PROJECT" --env-file "$ADMIN_ENV" -f admin.yaml up -d --build
 
 printf 'Waiting for the admin UI'
 i=0

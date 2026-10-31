@@ -1,3 +1,7 @@
+# Base layer, started by install.sh. Own compose project so no `down` of the infra stacks can remove it;
+# the gitea network is created outside compose (install.sh / init) for the same reason.
+name: infra-traefik
+
 services:
   traefik:
     image: traefik:v3.7.13
@@ -43,5 +47,4 @@ services:
 
 networks:
   gitea:
-    name: gitea
-    driver: bridge
+    external: true

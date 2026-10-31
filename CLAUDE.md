@@ -25,7 +25,7 @@ All of these run inside `app/`:
 On the host:
 - `sudo sh install.sh` (POSIX sh) installs Docker if it is missing and asks for the domain and root password. It then:
   - writes `config/main-config.json` and `.admin.env`;
-  - starts `traefik.yaml` as compose project `infra`;
+  - creates the `gitea` network and starts `traefik.yaml` as compose project `infra-traefik`;
   - starts `admin.yaml` as project `infra-admin`.
   
   The questions can be skipped with `INFRA_DOMAIN`, `INFRA_ROOT_USER` and `INFRA_ROOT_PASSWORD` (or `INFRA_KEEP_CONFIG=1`).
@@ -53,8 +53,9 @@ On the host:
 
 **Base layer vs. infra stacks.**
 - `traefik.yaml` and `admin.yaml` form the base layer. `install.sh` starts it, and `stop`/`clean` never touch it (`BASE_FILES` in `core/src/compose-files.ts`; all stack lists live in that file). `init` still runs `up -d` on Traefik, which applies a changed HTTPS setting.
-- `admin.yaml` must stay a separate compose project (`name: infra-admin`, plus `-p infra-admin` in `install.sh`). Otherwise `init`'s `traefik.yaml up --remove-orphans` would delete the admin container mid-run. `COMPOSE_PROJECT_NAME` beats the top-level `name:`, so never export it around the admin compose call.
-- The admin container is on the `gitea` network, which `traefik.yaml` creates. Traefik routes `HostRegexp(^admin\..+$)` to it.
+- Traefik and the admin are separate compose projects (`infra-traefik`, `infra-admin`; `name:` in the files, `-p` in `install.sh`, `BASE_PROJECT` in `compose()`). Anything in the `infra` project can be removed by init's `gitea.yaml up --remove-orphans`, and `down` on a compose file without services (e.g. an empty `competitors.yaml`) acts on the whole project; clean skips such files (`hasServices`). `COMPOSE_PROJECT_NAME` beats the top-level `name:`, so never export it around these calls.
+- The `gitea` network is created with `docker network create` (`install.sh`, `ensureBaseLayer`) and is `external` in every compose file, so no project owns or removes it. `ensureBaseLayer` also removes a Traefik container left in the old `infra` project.
+- The admin container is on the `gitea` network. Traefik routes `HostRegexp(^admin\..+$)` to it.
 - It reaches Gitea's API directly at `http://gitea:3000` (`GITEA_API_URL`). The public hostname goes through Traefik, which can hang once the runners start.
 - It mounts the repo at the same absolute path as on the host (`INFRA_DIR`). `docker compose` runs inside the container, but the host daemon resolves the stacks' relative bind mounts, so the paths must match. `pulldeck.yaml` and `infra-updater.yaml` use `${INFRA_DIR}` for the same reason.
 
