@@ -15,6 +15,7 @@ services:
       traefik.http.services.gitea.loadbalancer.server.port: 3000
       traefik.http.routers.gitea.entrypoints: ${ENTRYPOINT}
       traefik.http.routers.gitea.tls: ${ENABLE_HTTPS}
+      traefik.http.routers.gitea.tls.certresolver: ${CERT_RESOLVER:-}
     volumes:
       # - ./data/gitea:/data/gitea
       - ./config/gitea:/data/gitea/conf
@@ -26,6 +27,9 @@ services:
       - GITEA__SERVER__DOMAIN=git.${GITEA_HOSTNAME}
       - GITEA__SERVER__SSH_DOMAIN=git.${GITEA_HOSTNAME}
       - GITEA__DOCKER__REGISTRY_HOST=git.${GITEA_HOSTNAME}
+      # The repository webhook goes to the admin container (http://infra-admin:8090, a private address that
+      # Gitea refuses by default) and runs its syncCompetitors operation.
+      - GITEA__webhook__ALLOWED_HOST_LIST=external,infra-admin
     ports:
       # - "5000:5000"
       - "3000:3000"

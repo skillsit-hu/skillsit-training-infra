@@ -29,9 +29,10 @@ services:
     restart: always
     labels:
       traefik.enable: "true"
-      traefik.http.routers.pma.rule: HostRegexp(`^pma\..+$`)
+      traefik.http.routers.pma.rule: Host(`pma.${GITEA_HOSTNAME}`)
       traefik.http.services.pma.loadbalancer.server.port: 80
       traefik.http.routers.pma.tls: true
+      traefik.http.routers.pma.tls.certresolver: ${CERT_RESOLVER:-}
       traefik.http.routers.pma.entrypoints: websecure
 
 volumes:

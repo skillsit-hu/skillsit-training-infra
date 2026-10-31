@@ -4,10 +4,11 @@ services:
     container_name: 'verdaccio'
     labels:
       traefik.enable: 'true'
-      traefik.http.routers.verdaccio.rule: HostRegexp(`^verdaccio\..+$`)
+      traefik.http.routers.verdaccio.rule: Host(`verdaccio.${GITEA_HOSTNAME}`)
       traefik.http.services.verdaccio.loadbalancer.server.port: 4873
       traefik.http.routers.verdaccio.entrypoints: ${ENTRYPOINT}
       traefik.http.routers.verdaccio.tls: ${ENABLE_HTTPS}
+      traefik.http.routers.verdaccio.tls.certresolver: ${CERT_RESOLVER:-}
     environment:
       - VERDACCIO_PORT=4873
     ports:

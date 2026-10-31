@@ -34,7 +34,25 @@ In the UI you add the modules and competitors, then run **Inicializálás** (ini
 
 Re-running `install.sh` keeps the existing configuration and only restarts the base layer. Traefik and the admin UI are not touched by stop and clean.
 
-The built-in TLS certificate in `config/traefik/certs` is used for every host, so browsers warn on other domains. Proper certificates are a to-do.
+### TLS certificates
+With `letsencrypt: true` in the config, Traefik requests a separate Let's Encrypt certificate for each host the first time it is accessed. This covers `git.`, `admin.`, `pma.` and every competitor site. Turn it on or off in `install.sh` or with the Let's Encrypt switch in the UI. A change in the UI takes effect at the next Inicializálás.
+
+Requirements:
+- Public DNS for every host. A wildcard record `*.<domain>` covers all of them except two:
+  - `repo.repman.<domain>` needs its own record;
+  - the bare `<domain>`, where the Traefik dashboard is served.
+- Port 80 reachable from the internet (HTTP-01 challenge).
+- Let's Encrypt limits: 50 new certificates per registered domain per week, and 5 for the same host. The certificates live in the `infra-traefik_letsencrypt` volume, which Tisztítás does not remove, so re-initializing does not request new ones. Removing that volume does.
+- To try it out without using up the limits, set `ACME_CA_SERVER=https://acme-staging-v02.api.letsencrypt.org/directory` in `.admin.env`, then re-run `install.sh`. Staging certificates are not trusted by browsers. Before switching back, remove the volume, because Traefik keeps the staging certificates until they expire:
+
+  ```bash
+  docker compose -p infra-traefik -f traefik.yaml down
+  docker volume rm infra-traefik_letsencrypt
+  ```
+
+Hosts without a certificate yet, and every host when Let's Encrypt is off, get the built-in certificate from `config/traefik/certs`, which browsers warn about. Use this for local or test environments whose domain isn't publicly resolvable.
+
+The admin UI's route is created from the domain by `install.sh`. After changing the domain in the UI, re-run `sudo INFRA_KEEP_CONFIG=1 sh install.sh`.
 
 ### Admin UI
 The admin UI lives in its own repository, [skillsit-training-admin](https://github.com/skillsit-hu/skillsit-training-admin). GitHub Actions publishes it as the `ghcr.io/skillsit-hu/skillsit-training-admin` image, so nothing is built on the server. `install.sh` pulls the latest image.
@@ -50,6 +68,7 @@ The operations run from the UI:
 | Tisztítás | Removes containers, data volumes, competitor images and framework clones. Traefik and the admin UI keep running. |
 | Versenyző létrehozása | Adds a competitor to a running environment. |
 | Versenyzői loginok tiltása | Disables all competitors' Gitea logins. |
+| Versenyzői konténerek szinkronizálása | Regenerates the competitor containers and routes from the competitors' Gitea repositories. Runs automatically whenever a repository is created or deleted (Gitea webhook). |
 
 ### Configuration
 The environment is configured in `config/main-config.json`. `install.sh` creates it, the admin UI edits it, and it is not committed (see `config/main-config.example.json`):
@@ -58,20 +77,23 @@ The environment is configured in `config/main-config.json`. `install.sh` creates
 {
   "domain": "local.skill17.com",
   "enableHttps": true,
+  "letsencrypt": true,
+  "acmeEmail": "ops@example.com",
   "username": "root",
   "password": "change-me",
   "modules": ["module_a", "module_b"],
   "competitors": [
-    { "username": "comp01", "password": "test123", "subdomain": "qwer" }
+    { "name": "Competitor One", "username": "comp01", "password": "test123" }
   ]
 }
 ```
 
 1. **domain:** The main domain for the competition.
 2. **enableHttps:** Enable (`true`) or disable (`false`) HTTPS for Traefik.
+   - **letsencrypt / acmeEmail:** Per-host Let's Encrypt certificates (see above), with an optional e-mail for expiry notices.
 3. **username / password:** Root credentials for Gitea and MySQL.
-4. **modules:** Competition task names. A competitor site is published at `<subdomain>-<module>.<domain>`.
-5. **competitors:** Each entry is a username, password, and subdomain.
+4. **modules:** Competition task names. A competitor site is published at `<username>-<module>.<domain>`, lowercase, with `_` replaced by `-` (Let's Encrypt rejects `_` in hostnames).
+5. **competitors:** Each entry is a username and a password, with an optional display name.
 
 ## Using the Environment
 
@@ -80,9 +102,9 @@ The environment is configured in `config/main-config.json`. `install.sh` creates
   **Example:** `https://git.local.skill17.com`
 
 - **Competitors' Work:**  
-  Competitors' projects can be accessed using their subdomain and the module name.  
-  Format: `https://<subdomain>-<module_name>.<domain>`  
-  **Example:** `https://qwer-module_a.local.skill17.com`
+  Competitors' projects can be accessed using their username and the module name.  
+  Format: `https://<username>-<module_name>.<domain>` (lowercase, `_` becomes `-`)  
+  **Example:** `https://comp01-module-a.local.skill17.com`
 
 - **PHPMyAdmin (Database Management):**  
   Manage databases through the `pma` subdomain of your configured domain.  
@@ -90,8 +112,8 @@ The environment is configured in `config/main-config.json`. `install.sh` creates
 
 - **Packagist Mirror (Package Caching):**  
   A local Repman instance serving as a Packagist mirror for caching Laravel vendor packages, improving dependency installation speed.  
-  Access through the `packagist` subdomain of your configured domain.  
-  **Example:** `https://packagist.local.skill17.com`
+  Access through the `repman` subdomain of your configured domain.  
+  **Example:** `https://repman.local.skill17.com`
 
 ## Updates (Environment Repository)
    Before making changes to the environment repository, stop the environment in the admin UI (Leállítás).
@@ -133,5 +155,5 @@ The environment is configured in `config/main-config.json`. `install.sh` creates
 
 2. Edit, commit, and develop your code. Frequent commits help keep your work organized, and using branches allows you to work on features or fixes without affecting the main deployment. If competition organizers allow it, you can use third-party packages to support frameworks and enhance your project. Always keep your project README up to date with essential information about the repository, such as setup instructions and dependencies.
 
-3. Every push automatically deploys to the competition URL (e.g., `https://<subdomain>-<module_name>.local.skill17.com`).  
+3. Every push automatically deploys to the competition URL (e.g., `https://<username>-<module_name>.local.skill17.com`).  
    Be mindful of the number of pushes to avoid unnecessary deployments. Check your changes at the competition URL after each push.

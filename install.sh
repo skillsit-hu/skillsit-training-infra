@@ -4,8 +4,8 @@
 #
 #   sudo sh install.sh
 #
-# Non-interactive: INFRA_DOMAIN, INFRA_ROOT_USER and INFRA_ROOT_PASSWORD skip the questions
-# (INFRA_KEEP_CONFIG=1 keeps an existing config).
+# Non-interactive: INFRA_DOMAIN, INFRA_ROOT_USER, INFRA_ROOT_PASSWORD, INFRA_LETSENCRYPT (1/0) and INFRA_ACME_EMAIL
+# skip the questions (INFRA_KEEP_CONFIG=1 keeps an existing config).
 
 set -eu
 
@@ -56,6 +56,7 @@ json_string() { # value -> "value" (backslashes and newlines are rejected earlie
 valid_domain() { printf '%s' "$1" | grep -Eq '^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$'; }
 valid_user() { printf '%s' "$1" | grep -Eq '^[a-zA-Z0-9][a-zA-Z0-9_-]*$'; }
 valid_password() { [ -n "$1" ] && ! printf '%s' "$1" | grep -q "['\\\\]"; }
+valid_email() { [ -z "$1" ] || printf '%s' "$1" | grep -Eq '^[^@[:space:]"\\]+@[^@[:space:]"\\]+\.[^@[:space:]"\\]+$'; }
 
 # --- Docker -----------------------------------------------------------------------------------------------
 
@@ -139,10 +140,35 @@ else
     if [ "$REPLY" = "$first" ]; then ROOT_PASSWORD=$first; else say "The passwords do not match."; fi
   done
 
+  # Let's Encrypt needs public DNS for every host and port 80 reachable from the internet
+  LETSENCRYPT=${INFRA_LETSENCRYPT:-}
+  if [ -z "$LETSENCRYPT" ]; then
+    if [ -t 0 ]; then
+      ask "Request Let's Encrypt certificates for every host? (needs public DNS and port 80) (y/n)" "y"
+    else
+      REPLY=n
+    fi
+    case "$REPLY" in y | Y | yes) LETSENCRYPT=1 ;; *) LETSENCRYPT=0 ;; esac
+  fi
+  ACME_EMAIL=${INFRA_ACME_EMAIL:-}
+  if [ "$LETSENCRYPT" = 1 ] && [ -z "${INFRA_ACME_EMAIL+set}" ] && [ -t 0 ]; then
+    printf "E-mail for Let's Encrypt expiry notices (optional): "
+    read -r ACME_EMAIL || ACME_EMAIL=
+  fi
+  while ! valid_email "$ACME_EMAIL"; do
+    say "Invalid e-mail: $ACME_EMAIL"
+    [ -t 0 ] || die "Invalid INFRA_ACME_EMAIL"
+    printf "E-mail for Let's Encrypt expiry notices (optional): "
+    read -r ACME_EMAIL || ACME_EMAIL=
+  done
+  if [ "$LETSENCRYPT" = 1 ]; then le_json=true; else le_json=false; fi
+
   cat >"$CONFIG" <<EOF
 {
   "domain": $(json_string "$DOMAIN"),
   "enableHttps": true,
+  "letsencrypt": $le_json,
+  "acmeEmail": $(json_string "$ACME_EMAIL"),
   "username": $(json_string "$ROOT_USER"),
   "password": $(json_string "$ROOT_PASSWORD"),
   "modules": [],
@@ -152,11 +178,16 @@ EOF
   say "Wrote $CONFIG."
 fi
 
+# Same derivation as deriveConfig/routingEnv in skillsit-training-admin: init and start bring Traefik up with
+# these values too, and any difference would make compose recreate it.
+CERT_RESOLVER=
 if grep -Eq '"enableHttps"[[:space:]]*:[[:space:]]*"?false' "$CONFIG"; then
   REGISTRY_PORT=5000
 else
   REGISTRY_PORT=443
+  if grep -Eq '"letsencrypt"[[:space:]]*:[[:space:]]*true' "$CONFIG"; then CERT_RESOLVER=letsencrypt; fi
 fi
+ACME_EMAIL=$(sed -n 's/.*"acmeEmail"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$CONFIG" | head -n 1)
 
 if [ ! -f "$ADMIN_ENV" ]; then
   umask 077
@@ -169,7 +200,7 @@ EOF
 fi
 
 # This script runs as root; hand what it (or an earlier root run, or the admin container) wrote back to the
-# owner of the repository. main-config.json stays world-readable because infra-updater reads it.
+# owner of the repository.
 for f in "$CONFIG" "$ADMIN_ENV" pulldeck.env .env competitors.yaml config/mysql/competitors.sql data-admin; do
   [ -e "$f" ] && chown -R "$REPO_OWNER" "$f"
 done
@@ -200,13 +231,19 @@ if [ -n "$old_project" ] && [ "$old_project" != "$TRAEFIK_PROJECT" ]; then
   docker rm -f traefik >/dev/null
 fi
 
+# Optional, from .admin.env (the admin container gets it too, for init and start)
+ACME_CA_SERVER=$(sed -n 's/^ACME_CA_SERVER=//p' "$ADMIN_ENV")
+
 say "Starting Traefik..."
-GITEA_HOSTNAME=$DOMAIN REGISTRY_PORT=$REGISTRY_PORT docker compose -p "$TRAEFIK_PROJECT" -f traefik.yaml up -d
+[ -z "$CERT_RESOLVER" ] || say "Let's Encrypt is on: certificates are requested on the first request to each host."
+GITEA_HOSTNAME=$DOMAIN REGISTRY_PORT=$REGISTRY_PORT CERT_RESOLVER=$CERT_RESOLVER ACME_EMAIL=$ACME_EMAIL \
+  ACME_CA_SERVER=$ACME_CA_SERVER docker compose -p "$TRAEFIK_PROJECT" -f traefik.yaml up -d
 
 say "Pulling and starting the admin UI..."
 # A locally built ADMIN_IMAGE (not in any registry) is used as is
 docker compose -p "$ADMIN_PROJECT" --env-file "$ADMIN_ENV" -f admin.yaml pull --ignore-pull-failures
-docker compose -p "$ADMIN_PROJECT" --env-file "$ADMIN_ENV" -f admin.yaml up -d
+GITEA_HOSTNAME=$DOMAIN CERT_RESOLVER=$CERT_RESOLVER \
+  docker compose -p "$ADMIN_PROJECT" --env-file "$ADMIN_ENV" -f admin.yaml up -d
 
 printf 'Waiting for the admin UI'
 i=0

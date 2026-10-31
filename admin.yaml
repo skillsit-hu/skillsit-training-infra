@@ -10,6 +10,9 @@
 #   ADMIN_PORT            local fallback port, bound to 127.0.0.1 (default: 8090)
 #   DRY_RUN=1             log the commands instead of running them
 #   ADMIN_IMAGE           optional, e.g. a pinned tag (...:1.2.0) or a locally built image
+#   ACME_CA_SERVER        optional, e.g. https://acme-staging-v02.api.letsencrypt.org/directory to test Let's Encrypt
+#
+# install.sh also passes GITEA_HOSTNAME and CERT_RESOLVER from config/main-config.json.
 
 # Own compose project: `up --remove-orphans` on the infra stacks would otherwise remove this container.
 name: infra-admin
@@ -31,6 +34,8 @@ services:
       - GITEA_API_URL=http://gitea:3000
       - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET:-}
       - DRY_RUN=${DRY_RUN:-}
+      # Passed on to traefik.yaml by init and start
+      - ACME_CA_SERVER=${ACME_CA_SERVER:-}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       # Same path as on the host: docker compose resolves the stacks' relative bind mounts (./config, ...)
@@ -38,9 +43,12 @@ services:
       - ${INFRA_DIR}:${INFRA_DIR}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.infra-admin.rule=HostRegexp(`^admin\\..+$`)"
+      # Host() instead of HostRegexp: Let's Encrypt needs the exact name. install.sh passes the domain, so re-run it
+      # after changing the domain in the UI.
+      - "traefik.http.routers.infra-admin.rule=Host(`admin.${GITEA_HOSTNAME:?GITEA_HOSTNAME is not set}`)"
       - "traefik.http.routers.infra-admin.entrypoints=websecure"
       - "traefik.http.routers.infra-admin.tls=true"
+      - "traefik.http.routers.infra-admin.tls.certresolver=${CERT_RESOLVER:-}"
       - "traefik.http.services.infra-admin.loadbalancer.server.port=8090"
 
 networks:

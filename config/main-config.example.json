@@ -1,10 +1,12 @@
 {
   "domain": "local.skill17.com",
   "enableHttps": true,
+  "letsencrypt": false,
+  "acmeEmail": "",
   "username": "root",
   "password": "change-me",
   "modules": ["module_a", "module_b"],
   "competitors": [
-    { "name": "Competitor One", "username": "comp01", "password": "test123", "subdomain": "qwer" }
+    { "name": "Competitor One", "username": "comp01", "password": "test123" }
   ]
 }

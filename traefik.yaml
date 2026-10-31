@@ -29,13 +29,23 @@ services:
       - '--serversTransport.insecureSkipVerify=true'
       - '--experimental.plugins.sablier.modulename=github.com/sablierapp/sablier'
       - '--experimental.plugins.sablier.version=v1.10.1'
+      # Per-host Let's Encrypt certificates over HTTP-01 (port 80 must be reachable from the internet). Routers opt in
+      # with tls.certresolver=${CERT_RESOLVER}; it is empty when letsencrypt is off in main-config.json, and then
+      # the default certificate from config/traefik/config.yaml is served, as it is while a certificate is pending.
+      # ACME_CA_SERVER=https://acme-staging-v02.api.letsencrypt.org/directory switches to the staging CA for testing.
+      - '--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-}'
+      - '--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json'
+      - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
+      - '--certificatesresolvers.letsencrypt.acme.caserver=${ACME_CA_SERVER:-https://acme-v02.api.letsencrypt.org/directory}'
     ports:
       - '80:80'
       - '443:443'
       - '5000:5000'
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
-      - './letsencrypt:/letsencrypt'
+      # Issued certificates. A named volume of this project, so clean keeps it: re-issuing on every init would
+      # run into Let's Encrypt's rate limits (50 certificates per domain per week, 5 duplicates per week).
+      - 'letsencrypt:/letsencrypt'
       - './config/traefik:/etc/traefik/dynamic'
       - './config/traefik/certs:/etc/certs/'
     labels:
@@ -43,8 +53,12 @@ services:
       - "traefik.http.routers.traefik.rule=Host(`${GITEA_HOSTNAME}`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=${CERT_RESOLVER:-}"
       - "traefik.http.services.traefik.loadbalancer.server.port=8080"
 
 networks:
   gitea:
     external: true
+
+volumes:
+  letsencrypt:
