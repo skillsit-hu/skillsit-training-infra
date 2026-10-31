@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-This repo provisions a WorldSkills-style web development competition environment: Gitea (git, container registry, Actions runners), Traefik, MySQL/phpMyAdmin, a Packagist mirror (Repman), Verdaccio, Watchtower, Pulldeck, Sablier and infra-updater.
+This repo provisions a WorldSkills-style web development competition environment: Gitea (git, container registry, Actions runners), Traefik, MySQL/phpMyAdmin, a Packagist mirror (Repman), Verdaccio, Pulldeck, Sablier and infra-updater.
 
 It has three parts:
 - Docker Compose files (`*.yaml`) in the repo root.

@@ -1,14 +1,13 @@
 # Competition Environment Setup
 
 ## Description
-This project provides a simple, reliable, and efficient environment for web development competitions. Using Docker along with Gitea, Traefik, Watchtower, and MySQL, it allows organizers to set up a consistent competition environment with minimal effort. Competitors can focus on their work without worrying about complex configurations.
+This project provides a simple, reliable, and efficient environment for web development competitions. Using Docker along with Gitea, Traefik, and MySQL, it allows organizers to set up a consistent competition environment with minimal effort. Competitors can focus on their work without worrying about complex configurations.
 
 The environment includes:
 1. **Docker**: Ensures consistent setups across systems.  
 2. **Traefik**: Routes requests to the right services.  
-3. **Watchtower**: Updates Docker containers automatically.  
-4. **Gitea**: A Git server for version control.  
-5. **MySQL**: Manages competition data.  
+3. **Gitea**: A Git server for version control.  
+4. **MySQL**: Manages competition data.  
 
 ## Setting up the Environment
 
