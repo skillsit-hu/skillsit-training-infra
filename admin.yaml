@@ -31,7 +31,7 @@ services:
       - DRY_RUN=${DRY_RUN:-}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      # Same path as on the host: docker compose resolves the stacks' relative bind mounts (./data, ./config)
+      # Same path as on the host: docker compose resolves the stacks' relative bind mounts (./config, ...)
       # inside this container, and the host daemon has to find them at the same place.
       - ${INFRA_DIR}:${INFRA_DIR}
     labels:

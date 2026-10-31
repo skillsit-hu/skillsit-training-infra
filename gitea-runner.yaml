@@ -12,7 +12,7 @@ services:
     volumes:
       - ./config/gitea-runner/config.yaml:/config.yaml
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./data/runner1:/data
+      - runner1:/data
   runner2:
     <<: *runner
     environment:
@@ -22,7 +22,7 @@ services:
     volumes:
       - ./config/gitea-runner/config.yaml:/config.yaml
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./data/runner2:/data
+      - runner2:/data
   runner3:
     <<: *runner
     environment:
@@ -32,7 +32,7 @@ services:
     volumes:
       - ./config/gitea-runner/config.yaml:/config.yaml
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./data/runner3:/data
+      - runner3:/data
   runner4:
     <<: *runner 
     environment:
@@ -42,7 +42,7 @@ services:
     volumes:
       - ./config/gitea-runner/config.yaml:/config.yaml
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./data/runner4:/data
+      - runner4:/data
   runner5:
     <<: *runner
     environment:
@@ -52,7 +52,7 @@ services:
     volumes:
       - ./config/gitea-runner/config.yaml:/config.yaml
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./data/runner5:/data
+      - runner5:/data
   runner6:
     <<: *runner
     environment:
@@ -62,8 +62,16 @@ services:
     volumes:
       - ./config/gitea-runner/config.yaml:/config.yaml
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./data/runner6:/data
+      - runner6:/data
 
 networks:
   gitea:
     external: true
+
+volumes:
+  runner1:
+  runner2:
+  runner3:
+  runner4:
+  runner5:
+  runner6:

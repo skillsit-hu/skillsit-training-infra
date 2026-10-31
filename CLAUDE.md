@@ -70,6 +70,7 @@ On the host:
   - `pulldeck.env` is written by `init` and only read by pulldeck: `AUTH_TOKEN` is generated on the first init and then kept, and `DOCKER_USERNAME`/`DOCKER_PASSWORD` are set to the root user.
   - `.admin.env` is separate from `.env` because `init` overwrites `.env`.
 - `install.sh` and the admin container run as root. Write files into the repo with `writeRepoFile`/`appendRepoFile` (`core/src/files.ts`), which chown them to the repo directory's owner. `main-config.json` is 644 because infra-updater reads it; `pulldeck.env` and `.admin.env` are 600. Re-running `install.sh` also repairs the ownership of the generated files.
+- Service data (gitea-db, competitor MySQL, repman + postgres, verdaccio, runners) lives in named volumes (`infra_<name>`), not bind mounts under `./data`. MySQL/Postgres chown their data dir on start, which Docker Desktop on macOS refuses for bind mounts. Clean removes them with `down -v`. Only config files are bind-mounted.
 - `writeConfig` is atomic (temp file + rename). infra-updater mounts the whole `config/` dir, so it picks up the new file.
 - The config schema restricts usernames, modules and subdomains to slug characters, and passwords may not contain `'`, `\` or newlines. These values end up in hostnames, compose YAML and SQL. `install.sh` repeats the same rules.
 - The webhook secret is duplicated in `core/src/gitea.ts` (`WEBHOOK_SECRET`) and `infra-updater.yaml`. The compose project name `infra` is duplicated in `exec.ts`, `install.sh` and `infra-updater.yaml` (`DOCKER_PROJECT_NAME`).

@@ -13,7 +13,7 @@ services:
     ports:
       - '4873:4873'
     volumes:
-      - './data/verdaccio:/verdaccio/storage'
+      - 'verdaccio:/verdaccio/storage'
       - './config/verdaccio:/verdaccio/conf'
     restart: always
     networks:
@@ -21,3 +21,6 @@ services:
 networks:
   gitea:
     external: true
+
+volumes:
+  verdaccio:
