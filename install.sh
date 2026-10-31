@@ -15,6 +15,7 @@ fi
 
 cd "$(dirname "$0")"
 INFRA_DIR=$(pwd -P)
+REPO_OWNER=$(stat -c '%u:%g' .)
 CONFIG=config/main-config.json
 ADMIN_ENV=.admin.env
 # Compose project of the infra stacks; must match COMPOSE_PROJECT in app/packages/core/src/exec.ts.
@@ -135,7 +136,6 @@ else
     if [ "$REPLY" = "$first" ]; then ROOT_PASSWORD=$first; else say "The passwords do not match."; fi
   done
 
-  umask 077
   cat >"$CONFIG" <<EOF
 {
   "domain": $(json_string "$DOMAIN"),
@@ -146,7 +146,6 @@ else
   "competitors": []
 }
 EOF
-  umask 022
   say "Wrote $CONFIG."
 fi
 
@@ -165,6 +164,15 @@ ADMIN_PORT=8090
 EOF
   umask 022
 fi
+
+# This script runs as root; hand what it (or an earlier root run, or the admin container) wrote back to the
+# owner of the repository. main-config.json stays world-readable because infra-updater reads it.
+for f in "$CONFIG" "$ADMIN_ENV" pulldeck.env .env competitors.yaml config/mysql/competitors.sql data-admin; do
+  [ -e "$f" ] && chown -R "$REPO_OWNER" "$f"
+done
+chmod 644 "$CONFIG"
+chmod 600 "$ADMIN_ENV"
+
 ADMIN_PORT=$(sed -n 's/^ADMIN_PORT=//p' "$ADMIN_ENV")
 ADMIN_PORT=${ADMIN_PORT:-8090}
 
