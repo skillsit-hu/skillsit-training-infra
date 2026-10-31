@@ -19,8 +19,9 @@ INFRA_DIR=$(pwd -P)
 REPO_OWNER=$(ls -nd . | awk '{ print $3 ":" $4 }')
 CONFIG=config/main-config.json
 ADMIN_ENV=.admin.env
-# Compose projects of the base layer; must match BASE_PROJECT in app/packages/core/src/compose-files.ts and the
-# `name:` in traefik.yaml / admin.yaml. Passed with -p, never exported (COMPOSE_PROJECT_NAME beats `name:`).
+# Compose projects of the base layer; must match BASE_PROJECT in skillsit-training-admin
+# (packages/core/src/compose-files.ts) and the `name:` in traefik.yaml / admin.yaml.
+# Passed with -p, never exported (COMPOSE_PROJECT_NAME beats `name:`).
 TRAEFIK_PROJECT=infra-traefik
 ADMIN_PROJECT=infra-admin
 
@@ -51,7 +52,7 @@ json_string() { # value -> "value" (backslashes and newlines are rejected earlie
   printf '"%s"' "$(printf '%s' "$1" | sed 's/"/\\"/g')"
 }
 
-# Same rules as app/packages/core/src/schema.ts
+# Same rules as packages/core/src/schema.ts in skillsit-training-admin
 valid_domain() { printf '%s' "$1" | grep -Eq '^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$'; }
 valid_user() { printf '%s' "$1" | grep -Eq '^[a-zA-Z0-9][a-zA-Z0-9_-]*$'; }
 valid_password() { [ -n "$1" ] && ! printf '%s' "$1" | grep -q "['\\\\]"; }
@@ -202,8 +203,10 @@ fi
 say "Starting Traefik..."
 GITEA_HOSTNAME=$DOMAIN REGISTRY_PORT=$REGISTRY_PORT docker compose -p "$TRAEFIK_PROJECT" -f traefik.yaml up -d
 
-say "Building and starting the admin UI (the first build takes a few minutes)..."
-docker compose -p "$ADMIN_PROJECT" --env-file "$ADMIN_ENV" -f admin.yaml up -d --build
+say "Pulling and starting the admin UI..."
+# A locally built ADMIN_IMAGE (not in any registry) is used as is
+docker compose -p "$ADMIN_PROJECT" --env-file "$ADMIN_ENV" -f admin.yaml pull --ignore-pull-failures
+docker compose -p "$ADMIN_PROJECT" --env-file "$ADMIN_ENV" -f admin.yaml up -d
 
 printf 'Waiting for the admin UI'
 i=0

@@ -3,7 +3,7 @@ data
 .idea
 .env
 
-# framework clones created by init.mjs
+# framework clones created by init
 laravel/
 vanilla/
 nuxtjs/
@@ -18,9 +18,6 @@ bootstrap/
 angular/
 tailwindcss/
 
-# admin app (app/)
-node_modules/
-app/packages/*/dist/
 # job logs written by the admin server
 data-admin/
 

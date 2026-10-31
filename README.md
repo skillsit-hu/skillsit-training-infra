@@ -36,33 +36,20 @@ Re-running `install.sh` keeps the existing configuration and only restarts the b
 
 The built-in TLS certificate in `config/traefik/certs` is used for every host, so browsers warn on other domains. Proper certificates are a to-do.
 
-### Command line (optional)
-The operations can also be run from the shell. This needs Node.js 20+ and a one-time build of `app/`:
+### Admin UI
+The admin UI lives in its own repository, [skillsit-training-admin](https://github.com/skillsit-hu/skillsit-training-admin). GitHub Actions publishes it as the `ghcr.io/skillsit-hu/skillsit-training-admin` image, so nothing is built on the server. `install.sh` pulls the latest image.
 
-```bash
-cd app && npm ci && npm run build
-```
+To update the admin UI on a running server, re-run `sudo INFRA_KEEP_CONFIG=1 sh install.sh`. To use a fixed version, set `ADMIN_IMAGE=ghcr.io/skillsit-hu/skillsit-training-admin:<version>` in `.admin.env`.
 
-### Commands
-- **Initialize the environment:**  
-  `node init.mjs`
-   
-   **Note:** If you have previously run `node init.mjs`, make sure to clean the environment first by running `node clean.mjs` before initializing again. This ensures a fresh setup and avoids potential conflicts.
+The operations run from the UI:
 
-- **Add a competitor to a running environment:**  
-  `node create_user.mjs <username> <password>`
-
-- **Stop the environment:**  
-  `node stop.mjs`
-
-- **Restart the environment:**  
-  `node start.mjs`
-
-- **Clean the entire system:**  
-  `node clean.mjs`
-
-- **Disable all competitors' Gitea logins:**  
-  `node disable_competitors_gitlogin.mjs`
+| UI | Operation |
+| --- | --- |
+| Inicializálás | Provisions the environment. Run Tisztítás first if it was initialized before. |
+| Indítás / Leállítás | Starts or stops the environment. Containers and data are kept. |
+| Tisztítás | Removes containers, data volumes, competitor images and framework clones. Traefik and the admin UI keep running. |
+| Versenyző létrehozása | Adds a competitor to a running environment. |
+| Versenyzői loginok tiltása | Disables all competitors' Gitea logins. |
 
 ### Configuration
 The environment is configured in `config/main-config.json`. `install.sh` creates it, the admin UI edits it, and it is not committed (see `config/main-config.example.json`):
@@ -107,7 +94,7 @@ The environment is configured in `config/main-config.json`. `install.sh` creates
   **Example:** `https://packagist.local.skill17.com`
 
 ## Updates (Environment Repository)
-   Before making changes to the environment repository, stop all Docker containers: `node stop.mjs`
+   Before making changes to the environment repository, stop the environment in the admin UI (Leállítás).
 
 
 ## Competitor Workflow
