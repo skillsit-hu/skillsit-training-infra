@@ -1,8 +1,10 @@
 # Infra admin UI (https://github.com/skillsit-hu/skillsit-training-admin), a prebuilt image from ghcr.io.
 # Started by install.sh together with traefik.yaml; stop/clean leave both running.
 #
-#   docker compose --env-file .admin.env -f admin.yaml pull
-#   docker compose --env-file .admin.env -f admin.yaml up -d
+#   sudo INFRA_KEEP_CONFIG=1 sh install.sh   (pulls the image and recreates the container)
+#
+# By hand, GITEA_HOSTNAME (the domain) and CERT_RESOLVER have to be set, as install.sh does:
+#   GITEA_HOSTNAME=<domain> CERT_RESOLVER=letsencrypt docker compose -p infra-admin --env-file .admin.env -f admin.yaml up -d
 #
 # .admin.env (written by install.sh):
 #   INFRA_DIR             absolute host path of this repository

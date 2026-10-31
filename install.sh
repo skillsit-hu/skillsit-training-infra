@@ -241,9 +241,13 @@ GITEA_HOSTNAME=$DOMAIN REGISTRY_PORT=$REGISTRY_PORT CERT_RESOLVER=$CERT_RESOLVER
 
 say "Pulling and starting the admin UI..."
 # A locally built ADMIN_IMAGE (not in any registry) is used as is
-docker compose -p "$ADMIN_PROJECT" --env-file "$ADMIN_ENV" -f admin.yaml pull --ignore-pull-failures
-GITEA_HOSTNAME=$DOMAIN CERT_RESOLVER=$CERT_RESOLVER \
-  docker compose -p "$ADMIN_PROJECT" --env-file "$ADMIN_ENV" -f admin.yaml up -d
+# Every command interpolates the whole file, so each one needs the variables (admin.yaml requires GITEA_HOSTNAME)
+admin_compose() {
+  GITEA_HOSTNAME=$DOMAIN CERT_RESOLVER=$CERT_RESOLVER \
+    docker compose -p "$ADMIN_PROJECT" --env-file "$ADMIN_ENV" -f admin.yaml "$@"
+}
+admin_compose pull --ignore-pull-failures
+admin_compose up -d
 
 printf 'Waiting for the admin UI'
 i=0
