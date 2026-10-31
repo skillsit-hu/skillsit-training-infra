@@ -68,6 +68,7 @@ The operations run from the UI:
 | Tisztítás | Removes containers, data volumes, competitor images and framework clones. Traefik and the admin UI keep running. |
 | Versenyző létrehozása | Adds a competitor to a running environment. |
 | Versenyzői loginok tiltása | Disables all competitors' Gitea logins. |
+| Sablonok szinkronizálása | Imports the framework templates of the configuration that are missing from Gitea and deletes the ones no longer listed. |
 | Versenyzői konténerek szinkronizálása | Regenerates the competitor containers and routes from the competitors' Gitea repositories. Runs automatically whenever a repository is created or deleted (Gitea webhook). |
 
 ### Configuration
@@ -94,7 +95,7 @@ The environment is configured in `config/main-config.json`. `install.sh` creates
 3. **username / password:** Root credentials for Gitea and MySQL.
 4. **modules:** Competition task names. A competitor site is published at `<username>-<module>.<domain>`, lowercase, with `_` replaced by `-` (Let's Encrypt rejects `_` in hostnames).
 5. **competitors:** Each entry is a username and a password, with an optional display name.
-6. **frameworks:** The framework templates that init imports into the Gitea `frameworks` organization as template repositories, as `{ "name": "laravel", "url": "https://github.com/…/ws26-laravel.git" }` entries. Without the field the built-in list (the sitc2026-templates repositories) is used. Add or remove templates on the Konfiguráció page; the change applies at the next Inicializálás. A template without `.gitea/workflows/docker-ci.yaml` is imported unchanged.
+6. **frameworks:** The framework templates that init imports into the Gitea `frameworks` organization as template repositories, as `{ "name": "laravel", "url": "https://github.com/…/ws26-laravel.git" }` entries. Without the field the built-in list (the sitc2026-templates repositories) is used. Add or remove templates on the Konfiguráció page. Init imports the list; in a running environment, **Sablonok szinkronizálása** imports the new templates and deletes the removed ones. Repositories that competitors already created from a template are independent copies and are not affected. A template without `.gitea/workflows/docker-ci.yaml` is imported unchanged.
 
 ## Using the Environment
 
