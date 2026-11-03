@@ -1,3 +1,8 @@
+; Template of config/gitea/app.ini (which is gitignored). install.sh and init copy it there when it is missing.
+; INTERNAL_TOKEN and JWT_SECRET are empty on purpose: Gitea generates them on its first start and writes them
+; back to app.ini, so every installation has its own. The [server] domain values and the webhook host list are
+; overwritten at every start from the GITEA__* environment variables in gitea.yaml.
+
 APP_NAME = Digitalent Gitea
 RUN_MODE = prod
 RUN_USER = git
@@ -21,9 +26,9 @@ DISABLE_SSH = false
 SSH_PORT = 22
 SSH_LISTEN_PORT = 22
 LFS_START_SERVER = false
-ROOT_URL = https://git.digitalent.skillsit.hu
-SSH_DOMAIN = git.digitalent.skillsit.hu
-DOMAIN = git.digitalent.skillsit.hu
+ROOT_URL = http://localhost:3000/
+SSH_DOMAIN = localhost
+DOMAIN = localhost
 
 [database]
 PATH = /data/gitea/gitea.db
@@ -60,7 +65,7 @@ INSTALL_LOCK = true
 SECRET_KEY = 
 REVERSE_PROXY_LIMIT = 1
 REVERSE_PROXY_TRUSTED_PROXIES = *
-INTERNAL_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYmYiOjE3MjAxNjI3Mjh9.utLrb1XgvE1Oo144tmLIdO_3KQufUaqQ6wwJNU5g9gM
+INTERNAL_TOKEN =
 PASSWORD_HASH_ALGO = pbkdf2
 
 [service]
@@ -95,10 +100,10 @@ DEFAULT_MERGE_STYLE = merge
 DEFAULT_TRUST_MODEL = committer
 
 [oauth2]
-JWT_SECRET = LNdBJTNiVTwXsWYjdvUOW9C5PFzjyJ7H2nmsuIdeaNo
+JWT_SECRET =
 
 [docker]
 ENABLE_DOCKER_REGISTRY = true
 REGISTRY_PORT = 5000
 REGISTRY_PROTOCOL = http
-REGISTRY_HOST = git.digitalent.skillsit.hu
+REGISTRY_HOST = localhost
