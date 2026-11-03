@@ -59,6 +59,7 @@ On the host:
   - `config/main-config.json` is written by `install.sh` and the UI; `config/main-config.example.json` is the template.
   - `pulldeck.env` is written by `init` and only read by pulldeck.
   - `.admin.env` is separate from `.env` because `init` overwrites `.env`.
+  - `config/gitea/app.ini` is created from `app.ini.template` by `install.sh` and by the admin (init, start) when missing. Gitea generates `INTERNAL_TOKEN` and `JWT_SECRET` on its first start and writes them, and the `GITEA__*` env settings, into it. Never put secrets into the template.
 - `install.sh` and the admin container run as root and chown the files they write to the repo directory's owner. `main-config.json` is 644; `pulldeck.env` and `.admin.env` are 600. Re-running `install.sh` also repairs the ownership of the generated files.
 - Service data (gitea-db, competitor MySQL, repman + postgres, verdaccio, runners) lives in named volumes (`infra_<name>`), not bind mounts under `./data`. MySQL/Postgres chown their data dir on start, which Docker Desktop on macOS refuses for bind mounts. Clean removes the volumes with `down -v`. Only config files are bind-mounted.
 - Values duplicated across this repo and skillsit-training-admin:

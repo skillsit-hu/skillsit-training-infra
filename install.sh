@@ -199,6 +199,15 @@ EOF
   umask 022
 fi
 
+# Gitea's config is gitignored (Gitea writes its own secrets into it); start from the secret-free template.
+# The admin's init does the same, in case this script is not re-run after a pull.
+GITEA_INI=config/gitea/app.ini
+if [ ! -f "$GITEA_INI" ]; then
+  cp "$GITEA_INI.template" "$GITEA_INI"
+  chown "$REPO_OWNER" "$GITEA_INI"
+  say "Created $GITEA_INI from the template."
+fi
+
 # This script runs as root; hand what it (or an earlier root run, or the admin container) wrote back to the
 # owner of the repository.
 for f in "$CONFIG" "$ADMIN_ENV" pulldeck.env .env competitors.yaml config/mysql/competitors.sql data-admin; do

@@ -18,6 +18,8 @@ bootstrap/
 angular/
 tailwindcss/
 
+# Gitea writes its generated secrets and the GITEA__* settings into it; created from app.ini.template
+config/gitea/app.ini
 # Traefik route of the admin UI, written by the admin from main-config.json
 config/traefik/admin.yaml
 # job logs written by the admin server

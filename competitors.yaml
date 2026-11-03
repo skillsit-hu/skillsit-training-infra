@@ -1,4 +1,5 @@
-services: {}
+services:
+
 networks:
   gitea:
     external: true
