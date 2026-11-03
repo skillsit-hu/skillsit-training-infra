@@ -12,7 +12,7 @@ services:
       - ${INFRA_DIR:?INFRA_DIR is not set}:${INFRA_DIR:?INFRA_DIR is not set}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.pulldeck.rule=Host(`clara.${GITEA_HOSTNAME}`)"
+      - "traefik.http.routers.pulldeck.rule=Host(`pulldeck.${GITEA_HOSTNAME}`)"
       - "traefik.http.services.pulldeck.loadbalancer.server.port=3000"
       - "traefik.http.routers.pulldeck.entrypoints=websecure"
       - "traefik.http.routers.pulldeck.tls=true"

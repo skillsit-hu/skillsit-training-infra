@@ -10,11 +10,23 @@
 set -eu
 
 if [ "$(id -u)" -ne 0 ]; then
-  exec sudo -E sh "$0" "$@"
+  # Hand the INFRA_* settings over one by one: `sudo -E` is not supported everywhere (sudo-rs ignores it), and
+  # the default env_reset would drop them. `env` gets them as arguments, so values with spaces stay intact.
+  set -- sh "$0" "$@"
+  for var in INFRA_DOMAIN INFRA_ROOT_USER INFRA_ROOT_PASSWORD INFRA_KEEP_CONFIG INFRA_LETSENCRYPT INFRA_ACME_EMAIL; do
+    if eval "[ -n \"\${$var+set}\" ]"; then
+      eval "set -- \"$var=\${$var}\" \"\$@\""
+    fi
+  done
+  exec sudo env "$@"
 fi
 
-cd "$(dirname "$0")"
-INFRA_DIR=$(pwd -P)
+# Fails when the shell's working directory was deleted (e.g. the checkout was re-cloned under an open terminal)
+cd "$(dirname "$0")" 2>/dev/null && INFRA_DIR=$(pwd -P 2>/dev/null) && [ -n "$INFRA_DIR" ] || {
+  printf 'Error: cannot determine the repository directory. If it was deleted and re-created, run: cd %s\n' \
+    "$(dirname "$0")" >&2
+  exit 1
+}
 # uid:gid of the repo directory (ls -n is portable; stat's flags differ between GNU and BSD/macOS)
 REPO_OWNER=$(ls -nd . | awk '{ print $3 ":" $4 }')
 CONFIG=config/main-config.json

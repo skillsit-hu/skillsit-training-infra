@@ -50,7 +50,7 @@ On the host:
 **Competitor deploy loop.**
 1. `init` imports the framework templates from GitHub into the `frameworks` org and rewrites `.gitea/workflows/docker-ci.yaml` (registry host, `${{ secrets.PULLDECK_BASE_URL }}`).
 2. A push triggers Gitea Actions, which builds `git.<domain>/<user>/<module>` and pushes it to the Gitea registry.
-3. Pulldeck (`clara.<domain>`, `AUTH_TOKEN` from `pulldeck.env`) redeploys the container. Gitea's system webhook for repository events calls the admin (`http://infra-admin:8090/api/hooks/gitea`, allowed by `GITEA__webhook__ALLOWED_HOST_LIST` in `gitea.yaml`). The admin runs `syncCompetitors`, which regenerates `competitors.yaml` and `config/traefik/competitors.yaml` from the competitors' repositories and pushes a placeholder image for new ones. Sablier starts the containers on demand.
+3. Pulldeck (`pulldeck.<domain>`, `pulldeckUrl()` in the admin; `AUTH_TOKEN` from `pulldeck.env`) redeploys the container. Gitea's system webhook for repository events calls the admin (`http://infra-admin:8090/api/hooks/gitea`, allowed by `GITEA__webhook__ALLOWED_HOST_LIST` in `gitea.yaml`). The admin runs `syncCompetitors`, which regenerates `competitors.yaml` and `config/traefik/competitors.yaml` from the competitors' repositories and pushes a placeholder image for new ones. Sablier starts the containers on demand.
    - This replaced the separate infra-updater service. A container of it left over from an older install is removed by the next init (`--remove-orphans`).
 
 ## Gotchas
