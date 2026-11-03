@@ -41,7 +41,7 @@ Requirements:
 - Public DNS for every host. A wildcard record `*.<domain>` covers all of them except two:
   - `repo.repman.<domain>` needs its own record;
   - the bare `<domain>`, where the Traefik dashboard is served.
-- Port 80 reachable from the internet (HTTP-01 challenge).
+- Port 443 reachable from the internet (TLS-ALPN-01 challenge; port 80 is not needed). A proxy in front must pass TLS through unterminated, routed by SNI, for example a Traefik TCP router with `tls.passthrough: true`.
 - Let's Encrypt limits: 50 new certificates per registered domain per week, and 5 for the same host. The certificates live in the `infra-traefik_letsencrypt` volume, which Tisztítás does not remove, so re-initializing does not request new ones. Removing that volume does.
 - To try it out without using up the limits, set `ACME_CA_SERVER=https://acme-staging-v02.api.letsencrypt.org/directory` in `.admin.env`, then re-run `install.sh`. Staging certificates are not trusted by browsers. Before switching back, remove the volume, because Traefik keeps the staging certificates until they expire:
 

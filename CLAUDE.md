@@ -38,7 +38,7 @@ On the host:
 - It mounts this repo at the same absolute path as on the host (`INFRA_DIR`). `docker compose` runs inside the container, but the host daemon resolves the stacks' relative bind mounts, so the paths must match. `pulldeck.yaml` uses `${INFRA_DIR}` for the same reason.
 
 **TLS.**
-- Traefik defines the `letsencrypt` resolver (HTTP-01 on `web`). Every HTTPS router opts in with `tls.certresolver=${CERT_RESOLVER:-}`.
+- Traefik defines the `letsencrypt` resolver. It uses TLS-ALPN-01, which runs on 443 inside the TLS handshake: no port 80 is needed, and an SNI-passthrough proxy in front forwards it. HTTP-01 would break behind a front Traefik, because that one answers `/.well-known/acme-challenge/` for every host itself. Every HTTPS router opts in with `tls.certresolver=${CERT_RESOLVER:-}`.
   - `CERT_RESOLVER` is `letsencrypt` when `enableHttps` and `letsencrypt` are both on in `main-config.json`, and empty otherwise. Empty means the default certificate from `config/traefik/config.yaml`.
   - The router on the HTTP entrypoint (`competitor-db`) does not take part.
 - The variable comes from `install.sh`, or from `routingEnv()` in the admin (init, start). Both derive it the same way, so `up` on Traefik does not recreate it needlessly.

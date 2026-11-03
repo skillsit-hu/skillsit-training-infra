@@ -29,13 +29,15 @@ services:
       - '--serversTransport.insecureSkipVerify=true'
       - '--experimental.plugins.sablier.modulename=github.com/sablierapp/sablier'
       - '--experimental.plugins.sablier.version=v1.10.1'
-      # Per-host Let's Encrypt certificates over HTTP-01 (port 80 must be reachable from the internet). Routers opt in
-      # with tls.certresolver=${CERT_RESOLVER}; it is empty when letsencrypt is off in main-config.json, and then
+      # Per-host Let's Encrypt certificates over TLS-ALPN-01: the challenge runs inside the TLS handshake on port 443,
+      # so port 80 is not needed and an SNI passthrough proxy in front (e.g. a TCP router with tls.passthrough)
+      # forwards it unchanged. HTTP-01 would need port 80, where such a proxy usually answers challenges itself.
+      # Routers opt in with tls.certresolver=${CERT_RESOLVER}; it is empty when letsencrypt is off in main-config.json, and then
       # the default certificate from config/traefik/config.yaml is served, as it is while a certificate is pending.
       # ACME_CA_SERVER=https://acme-staging-v02.api.letsencrypt.org/directory switches to the staging CA for testing.
       - '--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-}'
       - '--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json'
-      - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
+      - '--certificatesresolvers.letsencrypt.acme.tlschallenge=true'
       - '--certificatesresolvers.letsencrypt.acme.caserver=${ACME_CA_SERVER:-https://acme-v02.api.letsencrypt.org/directory}'
     ports:
       - '80:80'

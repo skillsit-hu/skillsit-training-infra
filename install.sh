@@ -140,11 +140,11 @@ else
     if [ "$REPLY" = "$first" ]; then ROOT_PASSWORD=$first; else say "The passwords do not match."; fi
   done
 
-  # Let's Encrypt needs public DNS for every host and port 80 reachable from the internet
+  # Let's Encrypt (TLS-ALPN-01) needs public DNS for every host and port 443 reachable from the internet
   LETSENCRYPT=${INFRA_LETSENCRYPT:-}
   if [ -z "$LETSENCRYPT" ]; then
     if [ -t 0 ]; then
-      ask "Request Let's Encrypt certificates for every host? (needs public DNS and port 80) (y/n)" "y"
+      ask "Request Let's Encrypt certificates for every host? (needs public DNS and port 443) (y/n)" "y"
     else
       REPLY=n
     fi
